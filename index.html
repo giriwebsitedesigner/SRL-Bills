@@ -8,11 +8,12 @@ body{margin:0;font-family:system-ui,Arial,sans-serif;background:#eef2f7;color:#1
 .chooser{min-height:100vh;display:grid;place-items:center;padding:24px}
 .choose-card{width:min(100%,420px);background:#fff;border-radius:16px;padding:28px;box-shadow:0 8px 28px rgba(15,23,42,.12);text-align:center}
 .choose-card h1{font-size:25px;margin:0 0 8px}.choose-card p{margin:0 0 24px;color:#526173}
-.challenge-option{margin:10px 0 0;padding:16px;border:1px solid #cbd5e1;border-radius:10px;text-align:left;cursor:pointer;background:#fff;color:#16202c}
+.challenge-option{display:block;width:100%;margin:10px 0 0;padding:16px;border:1px solid #cbd5e1;border-radius:10px;text-align:left;cursor:pointer;background:#fff;color:#16202c;text-decoration:none}
 .challenge-option strong,.challenge-option span{display:block}.challenge-option span{font-size:13px;color:#526173;margin-top:3px}
 .challenge-option.primary{background:#1d4ed8;color:#fff;border-color:#1d4ed8}.challenge-option.primary span{color:#dbeafe}
 .plain-note{min-height:18px;margin:12px 0 0;color:#526173;font-size:13px}
 .topbar{max-width:900px;margin:0 auto;padding:16px 16px 0}.back{width:auto;margin:0;padding:8px 12px;font-size:14px;background:#fff;color:#1d4ed8;border:1px solid #bfdbfe}
+#challanApp:target{display:block!important}body:has(#challanApp:target) #chooser{display:none}
 .wrap{max-width:900px;margin:0 auto;padding:16px;display:grid;gap:16px;grid-template-columns:1fr 1fr}
 @media(max-width:720px){.wrap{grid-template-columns:1fr}}
 .card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.12)}
@@ -39,13 +40,13 @@ button{margin-top:16px;width:100%;padding:13px;font-size:16px;font-weight:700;bo
   <section class="choose-card" aria-labelledby="chooseTitle">
     <h1 id="chooseTitle">Challan</h1>
     <p>Select the challan format you need.</p>
-    <button class="challenge-option primary" id="openSrl" type="button"><strong>SRL Challan</strong><span>SRL Blue Metals delivery challan</span></button>
+    <a class="challenge-option primary" id="openSrl" href="#challanApp"><strong>SRL Challan</strong><span>SRL Blue Metals delivery challan</span></a>
     <button class="challenge-option" id="openPlain" type="button"><strong>Plain Challan</strong><span>New format to be added next</span></button>
     <div class="plain-note" id="plainNote" role="status"></div>
   </section>
 </main>
 <main id="challanApp" hidden>
-<div class="topbar"><button class="back" id="backToMenu" type="button">← Challan options</button></div>
+<div class="topbar"><a class="back" id="backToMenu" href="#">← Challan options</a></div>
 <div class="wrap">
 <div class="card">
 <h1>Delivery Challan Entry</h1>
@@ -126,9 +127,12 @@ function refresh(){
 }
 document.querySelectorAll("input,select").forEach(e=>{e.addEventListener("input",refresh);e.addEventListener("change",refresh)});
 const chooser=$("chooser"),challanApp=$("challanApp");
-$("openSrl").onclick=()=>{chooser.hidden=true;challanApp.hidden=false;window.scrollTo(0,0)};
-$("backToMenu").onclick=()=>{challanApp.hidden=true;chooser.hidden=false;window.scrollTo(0,0)};
+const showChallan=()=>{chooser.hidden=true;challanApp.hidden=false;window.scrollTo(0,0)};
+const showMenu=()=>{challanApp.hidden=true;chooser.hidden=false;window.scrollTo(0,0)};
+$("openSrl").onclick=showChallan;
+$("backToMenu").onclick=showMenu;
 $("openPlain").onclick=()=>{$("plainNote").textContent="Plain Challan format will be added next."};
+if(location.hash==="#challanApp")showChallan();
 refresh();
 const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 const textOf=p=>(p.match(/<w:t[ >][^]*?<\/w:t>|<w:t>[^<]*<\/w:t>/g)||[]).map(t=>t.replace(/<[^>]+>/g,"")).join("").replace(/&amp;/g,"&");
