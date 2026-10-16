@@ -14,14 +14,17 @@ input,select{width:100%;padding:10px;font-size:15px;border:1px solid #b8c4d0;bor
 input[readonly]{background:#eef2f7;color:#333}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 button{margin-top:16px;width:100%;padding:13px;font-size:16px;font-weight:700;border:0;border-radius:8px;background:#1d4ed8;color:#fff;cursor:pointer}
-.bill{background:#fff;border:1px solid #000;max-width:300px;margin:0 auto;padding:14px 18px;font-family:"Times New Roman",serif;font-size:13px}
-.bill .logo{font-family:Arial,sans-serif;font-size:34px;text-align:center;line-height:1}
-.bill .sub{text-align:center;font-size:16px;margin-top:4px}
-.bill .dt{text-align:center;font-size:10px;margin:6px 0}
-.bill hr{border:0;border-top:1px solid #000;margin:6px 0}
-.bill .t{text-align:center;font-size:11px}
-.bill .r{display:flex;justify-content:space-between;padding:7px 0}
-.bill .ty{text-align:center;font-size:11px;margin-top:10px}
+.bill{background:#fff;border:1px solid #000;width:252px;min-height:478px;margin:0 auto;padding:7px 11px;font-family:"Times New Roman",serif;font-size:12px}
+.bill .logo{font-family:"Colonna MT","Times New Roman",serif;font-size:36px;text-align:center;line-height:1}
+.bill .sub{text-align:center;font-size:16px;line-height:18px}
+.bill .dt{text-align:center;font-size:10px;font-weight:700;line-height:18px}
+.bill .top-rule{border-top:1px solid #000;height:2px;margin:0}
+.bill .t{border-bottom:1px solid #000;text-align:center;font-size:11px;line-height:17px}
+.bill .title-spacer{height:9px}
+.bill .r{display:flex;justify-content:space-between;align-items:center;min-height:24px;padding:0}
+.bill .r.net{min-height:18px}
+.bill .payment-gap{height:18px}
+.bill .ty{text-align:center;font-size:11px;line-height:13px;margin-top:3px}
 .err{color:#b91c1c;font-size:13px;margin-top:8px;min-height:16px}
 </style></head><body>
 <div class="wrap">
@@ -42,8 +45,8 @@ button{margin-top:16px;width:100%;padding:13px;font-size:16px;font-weight:700;bo
 </div>
 <div class="card"><h1>Preview</h1>
 <div class="bill">
-<div class="logo">SRL</div><div class="sub">BLUE METALS</div><div class="dt" id="p_dt"></div><hr>
-<div class="t">DELIVERY CHALLAN</div>
+<div class="logo">SRL</div><div class="sub">BLUE METALS</div><div class="dt" id="p_dt"></div><div class="top-rule"></div>
+<div class="t">DELIVERY CHALLAN</div><div class="title-spacer"></div>
 <div class="r"><span>DC/Ref #:</span><span id="p_dc"></span></div>
 <div class="r"><span>Party:</span><span id="p_party"></span></div>
 <div class="r"><span>Loading:</span><span id="p_loading"></span></div>
@@ -53,7 +56,8 @@ button{margin-top:16px;width:100%;padding:13px;font-size:16px;font-weight:700;bo
 <div class="r"><span>Material:</span><span id="p_mat"></span></div>
 <div class="r"><span>Empty Qty:</span><span id="p_empty"></span></div>
 <div class="r"><span>Full Qty:</span><span id="p_full"></span></div>
-<div class="r"><span>Net Qty:</span><span id="p_net"></span></div>
+<div class="r net"><span>Net Qty:</span><span id="p_net"></span></div>
+<div class="payment-gap"></div>
 <div class="r"><span>Payment Type:</span><span id="p_pay"></span></div>
 <div class="ty">Thank you for your business Please visit again<br>SRL BLUE METALS.</div>
 </div></div>
@@ -96,8 +100,9 @@ function vals(){
 }
 function refresh(){
   const v=vals(); $("empty").value=r2(TRUCKS[v.truck]); $("full").value=r2(TRUCKS[v.truck]+(parseFloat($("net").value)||0));
-  $("p_dt").textContent=v.dt;
-  ["dc","party","loading","unload","transport","truck","mat","empty","full","net","pay"].forEach(k=>$("p_"+k).textContent=v[k]);
+  $("p_dt").textContent="Date: "+v.dt;
+  ["dc","party","loading","unload","transport","truck","mat","pay"].forEach(k=>$("p_"+k).textContent=v[k]);
+  ["empty","full","net"].forEach(k=>$("p_"+k).textContent=v[k] ? v[k]+"MT" : "");
 }
 document.querySelectorAll("input,select").forEach(e=>{e.addEventListener("input",refresh);e.addEventListener("change",refresh)});
 refresh();
@@ -115,13 +120,14 @@ async function build(v){
     if(/^Date:/.test(t)){
       const rp='<w:rPr><w:sz w:val="14"/><w:szCs w:val="14"/></w:rPr>';
       const ppr=(p.match(/<w:pPr>[^]*?<\/w:pPr>/)||[""])[0];
-      return open+ppr+`<w:r>${rp}<w:t xml:space="preserve">${esc(v.dt)}</w:t></w:r></w:p>`;
+      return open+ppr+`<w:r>${rp}<w:t xml:space="preserve">Date: ${esc(v.dt)}</w:t></w:r></w:p>`;
     }
     const key=Object.keys(map).find(k=>t.startsWith(k));
     if(!key) return p;
     let ppr=p.match(/<w:pPr>[^]*?<\/w:pPr>/)[0];
     ppr=ppr.replace(/<w:jc [^>]*\/>/,"").replace("<w:pPr>",'<w:pPr><w:tabs><w:tab w:val="right" w:pos="3540"/></w:tabs>');
-    return open+ppr+`<w:r>${rpr}<w:t>${esc(key)}</w:t></w:r><w:r>${rpr}<w:tab/></w:r><w:r>${rpr}<w:t>${esc(map[key])}</w:t></w:r></w:p>`;
+    const value=["Empty Qty:","Full Qty:","Net Qty:"].includes(key)&&map[key] ? map[key]+"MT" : map[key];
+    return open+ppr+`<w:r>${rpr}<w:t>${esc(key)}</w:t></w:r><w:r>${rpr}<w:tab/></w:r><w:r>${rpr}<w:t>${esc(value)}</w:t></w:r></w:p>`;
   });
   zip.file("word/document.xml",xml);
   return zip.generateAsync({type:"blob",mimeType:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
