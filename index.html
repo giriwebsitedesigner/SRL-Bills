@@ -5,6 +5,14 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,Arial,sans-serif;background:#eef2f7;color:#16202c}
+.chooser{min-height:100vh;display:grid;place-items:center;padding:24px}
+.choose-card{width:min(100%,420px);background:#fff;border-radius:16px;padding:28px;box-shadow:0 8px 28px rgba(15,23,42,.12);text-align:center}
+.choose-card h1{font-size:25px;margin:0 0 8px}.choose-card p{margin:0 0 24px;color:#526173}
+.challenge-option{margin:10px 0 0;padding:16px;border:1px solid #cbd5e1;border-radius:10px;text-align:left;cursor:pointer;background:#fff;color:#16202c}
+.challenge-option strong,.challenge-option span{display:block}.challenge-option span{font-size:13px;color:#526173;margin-top:3px}
+.challenge-option.primary{background:#1d4ed8;color:#fff;border-color:#1d4ed8}.challenge-option.primary span{color:#dbeafe}
+.plain-note{min-height:18px;margin:12px 0 0;color:#526173;font-size:13px}
+.topbar{max-width:900px;margin:0 auto;padding:16px 16px 0}.back{width:auto;margin:0;padding:8px 12px;font-size:14px;background:#fff;color:#1d4ed8;border:1px solid #bfdbfe}
 .wrap{max-width:900px;margin:0 auto;padding:16px;display:grid;gap:16px;grid-template-columns:1fr 1fr}
 @media(max-width:720px){.wrap{grid-template-columns:1fr}}
 .card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.12)}
@@ -14,7 +22,7 @@ input,select{width:100%;padding:10px;font-size:15px;border:1px solid #b8c4d0;bor
 input[readonly]{background:#eef2f7;color:#333}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 button{margin-top:16px;width:100%;padding:13px;font-size:16px;font-weight:700;border:0;border-radius:8px;background:#1d4ed8;color:#fff;cursor:pointer}
-.bill{background:#fff;border:1px solid #000;width:252px;min-height:478px;margin:0 auto;padding:7px 11px;font-family:"Times New Roman",serif;font-size:12px}
+.bill{background:#fff;border:1px solid #000;width:252px;min-height:478px;margin:0 auto;padding:7px 11px;display:flex;flex-direction:column;font-family:"Times New Roman",serif;font-size:12px}
 .bill .logo{font-family:"Colonna MT","Times New Roman",serif;font-size:36px;text-align:center;line-height:1}
 .bill .sub{text-align:center;font-size:16px;line-height:18px}
 .bill .dt{text-align:center;font-size:10px;font-weight:700;line-height:18px}
@@ -24,9 +32,20 @@ button{margin-top:16px;width:100%;padding:13px;font-size:16px;font-weight:700;bo
 .bill .r{display:flex;justify-content:space-between;align-items:center;min-height:24px;padding:0}
 .bill .r.net{min-height:18px}
 .bill .payment-gap{height:18px}
-.bill .ty{text-align:center;font-size:11px;line-height:13px;margin-top:3px}
+.bill .ty{text-align:center;font-size:11px;line-height:13px;margin-top:auto;padding-bottom:4px}
 .err{color:#b91c1c;font-size:13px;margin-top:8px;min-height:16px}
 </style></head><body>
+<main class="chooser" id="chooser">
+  <section class="choose-card" aria-labelledby="chooseTitle">
+    <h1 id="chooseTitle">Challan</h1>
+    <p>Select the challan format you need.</p>
+    <button class="challenge-option primary" id="openSrl" type="button"><strong>SRL Challan</strong><span>SRL Blue Metals delivery challan</span></button>
+    <button class="challenge-option" id="openPlain" type="button"><strong>Plain Challan</strong><span>New format to be added next</span></button>
+    <div class="plain-note" id="plainNote" role="status"></div>
+  </section>
+</main>
+<main id="challanApp" hidden>
+<div class="topbar"><button class="back" id="backToMenu" type="button">← Challan options</button></div>
 <div class="wrap">
 <div class="card">
 <h1>Delivery Challan Entry</h1>
@@ -62,6 +81,7 @@ button{margin-top:16px;width:100%;padding:13px;font-size:16px;font-weight:700;bo
 <div class="ty">Thank you for your business Please visit again<br>SRL BLUE METALS.</div>
 </div></div>
 </div>
+</main>
 <script>/*!
 
 JSZip v3.10.2 - A JavaScript class for generating and reading zip files
@@ -92,10 +112,10 @@ function vals(){
   const [H,M]=($("time").value||"").split(":");
   let h=+H, ap=h>=12?"pm":"am"; h=h%12||12;
   const e=TRUCKS[$("truck").value], n=parseFloat($("net").value)||0;
-  return {dt:`Date: ${d}-${m}-${y}   ${p2(h)}:${M} ${ap}`,
+  return {dt:`${d}-${m}-${y}   ${p2(h)}:${M} ${ap}`,
    dc:$("dc").value.trim(),party:$("party").value,loading:$("loading").value,unload:$("unload").value,
    transport:$("transport").value,truck:$("truck").value,mat:$("mat").value,
-   empty:r2(e)+"MT",full:r2(e+n)+"MT",net:r2(n)+"MT",pay:$("pay").value,
+   empty:r2(e),full:r2(e+n),net:r2(n),pay:$("pay").value,
    _y:y,_m:m,_d:d,_H:H,_M:M};
 }
 function refresh(){
@@ -105,6 +125,10 @@ function refresh(){
   ["empty","full","net"].forEach(k=>$("p_"+k).textContent=v[k] ? v[k]+"MT" : "");
 }
 document.querySelectorAll("input,select").forEach(e=>{e.addEventListener("input",refresh);e.addEventListener("change",refresh)});
+const chooser=$("chooser"),challanApp=$("challanApp");
+$("openSrl").onclick=()=>{chooser.hidden=true;challanApp.hidden=false;window.scrollTo(0,0)};
+$("backToMenu").onclick=()=>{challanApp.hidden=true;chooser.hidden=false;window.scrollTo(0,0)};
+$("openPlain").onclick=()=>{$("plainNote").textContent="Plain Challan format will be added next."};
 refresh();
 const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 const textOf=p=>(p.match(/<w:t[ >][^]*?<\/w:t>|<w:t>[^<]*<\/w:t>/g)||[]).map(t=>t.replace(/<[^>]+>/g,"")).join("").replace(/&amp;/g,"&");
