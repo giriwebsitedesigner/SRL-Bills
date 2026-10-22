@@ -37,5 +37,14 @@
       </a>
     </section>
   </main>
+  <script>
+    (function () {
+      if (window.location.hash === "#plainChallan") {
+        window.location.replace("plain.html");
+      } else if (window.location.hash === "#challanApp") {
+        window.location.replace("srl.html");
+      }
+    }());
+  </script>
 </body>
 </html>
