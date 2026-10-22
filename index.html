@@ -63,7 +63,7 @@ button{margin-top:16px;width:100%;padding:13px;font-size:16px;font-weight:700;bo
     <h1 id="chooseTitle">Challan</h1>
     <p>Select the challan format you need.</p>
     <a class="challenge-option primary" id="openSrl" href="#challanApp"><strong>SRL Challan</strong><span>SRL Blue Metals delivery challan</span></a>
-    <button class="challenge-option" id="openPlain" type="button"><strong>Plain Challan</strong><span>POS-friendly outgoing-trip challan</span></button>
+    <a class="challenge-option" id="openPlain" href="#plainChallan"><strong>Plain Challan</strong><span>POS-friendly outgoing-trip challan</span></a>
     <div class="plain-note" id="plainNote" role="status"></div>
   </section>
 </main>
@@ -218,6 +218,7 @@ $("backToMenu").onclick=showMenu;
 $("plainBack").onclick=showMenu;
 $("openPlain").onclick=showPlain;
 if(location.hash==="#challanApp")showChallan();
+if(location.hash==="#plainChallan")showPlain();
 $("plainPrint").onclick=()=>{
   const v=plainVals(),er=$("plainErr");
   if(!v.dc){er.textContent="Enter the DC number before printing.";return}
