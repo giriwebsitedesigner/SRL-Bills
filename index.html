@@ -35,13 +35,35 @@ button{margin-top:16px;width:100%;padding:13px;font-size:16px;font-weight:700;bo
 .bill .payment-gap{height:18px}
 .bill .ty{text-align:center;font-size:11px;line-height:13px;margin-top:auto;padding-bottom:4px}
 .err{color:#b91c1c;font-size:13px;margin-top:8px;min-height:16px}
+.plain-wrap{max-width:900px;margin:0 auto;padding:16px;display:grid;gap:16px;grid-template-columns:1fr 1fr}
+.plain-bill{background:#fff;border:1px solid #000;width:302px;min-height:470px;margin:0 auto;padding:14px 16px;font-family:Arial,sans-serif;font-size:12px;color:#000}
+.plain-bill .plain-head{text-align:center;font-size:19px;font-weight:800;letter-spacing:.25px;margin-bottom:3px}
+.plain-bill .plain-date{text-align:center;font-size:11px;border-bottom:1px solid #000;padding:0 0 8px;margin-bottom:8px}
+.plain-bill .plain-title{text-align:center;font-size:13px;font-weight:800;margin:7px 0 13px}
+.plain-bill .plain-trip{text-align:center;font-size:11px;font-weight:700;margin:0 0 13px}
+.plain-bill .plain-row{display:grid;grid-template-columns:96px 1fr;gap:8px;min-height:27px;align-items:start}
+.plain-bill .plain-row span:last-child{text-align:right;overflow-wrap:anywhere}
+.plain-bill .plain-rule{border-top:1px solid #000;margin:9px 0}
+.plain-bill .plain-footer{text-align:center;font-size:10px;margin-top:16px}
+@media(max-width:720px){.plain-wrap{grid-template-columns:1fr}}
+@media print{
+  @page{size:80mm auto;margin:0}
+  body{background:#fff!important}
+  #chooser,#challanApp,.topbar,#plainFormCard{display:none!important}
+  #plainApp{display:block!important;margin:0!important;padding:0!important}
+  .plain-wrap{display:block!important;margin:0!important;padding:0!important}
+  .plain-print-card{display:block!important;box-shadow:none!important;border:0!important;padding:0!important}
+  .plain-print-card h1{display:none!important}
+  .plain-bill{width:80mm!important;min-height:0!important;margin:0!important;border:0!important;padding:4mm 5mm!important;font-size:11px!important}
+  .plain-bill .plain-row{min-height:6mm!important}
+}
 </style></head><body>
 <main class="chooser" id="chooser">
   <section class="choose-card" aria-labelledby="chooseTitle">
     <h1 id="chooseTitle">Challan</h1>
     <p>Select the challan format you need.</p>
     <a class="challenge-option primary" id="openSrl" href="#challanApp"><strong>SRL Challan</strong><span>SRL Blue Metals delivery challan</span></a>
-    <button class="challenge-option" id="openPlain" type="button"><strong>Plain Challan</strong><span>New format to be added next</span></button>
+    <button class="challenge-option" id="openPlain" type="button"><strong>Plain Challan</strong><span>POS-friendly outgoing-trip challan</span></button>
     <div class="plain-note" id="plainNote" role="status"></div>
   </section>
 </main>
@@ -83,6 +105,43 @@ button{margin-top:16px;width:100%;padding:13px;font-size:16px;font-weight:700;bo
 </div></div>
 </div>
 </main>
+<main id="plainApp" hidden>
+<div class="topbar"><button class="back" id="plainBack" type="button">← Challan options</button></div>
+<div class="plain-wrap">
+<div class="card" id="plainFormCard">
+<h1>Plain Challan Entry</h1>
+<div class="row"><div><label>Date</label><input type="date" id="plainDate"></div><div><label>Time</label><input type="time" id="plainTime"></div></div>
+<label>DC #</label><input id="plainDc" placeholder="e.g. MT/604">
+<label>Party</label><input id="plainParty" value="VMS">
+<div class="row"><div><label>Loading</label><input id="plainLoading" value="CRUSER"></div><div><label>Un Loading</label><input id="plainUnload" value="PARTY SITE"></div></div>
+<label>Transport</label><input id="plainTransport" value="VMS">
+<label>Vehicle No</label><select id="plainTruck"></select>
+<label>Item</label><select id="plainMat"></select>
+<div class="row"><div><label>Empty Qty (MT)</label><input id="plainEmpty" readonly></div><div><label>Net Qty (MT)</label><input id="plainNet" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0.00"></div></div>
+<label>Full Qty (MT) = Empty + Net</label><input id="plainFull" readonly>
+<div class="err" id="plainErr"></div>
+<button id="plainPrint" type="button">Print Challan</button>
+</div>
+<div class="card plain-print-card"><h1>Print Preview</h1>
+<div class="plain-bill" id="plainBill">
+  <div class="plain-head">DELIVERY CHALLAN</div>
+  <div class="plain-date" id="ppDate"></div>
+  <div class="plain-title" id="ppDc"></div>
+  <div class="plain-trip">OUTGOING TRIP</div>
+  <div class="plain-row"><span>Party:</span><span id="ppParty"></span></div>
+  <div class="plain-row"><span>Loading:</span><span id="ppLoading"></span></div>
+  <div class="plain-row"><span>Un Loading:</span><span id="ppUnload"></span></div>
+  <div class="plain-row"><span>Transport:</span><span id="ppTransport"></span></div>
+  <div class="plain-row"><span>Vehicle no:</span><span id="ppTruck"></span></div>
+  <div class="plain-row"><span>Item:</span><span id="ppMat"></span></div>
+  <div class="plain-rule"></div>
+  <div class="plain-row"><span>Empty Qty:</span><span id="ppEmpty"></span></div>
+  <div class="plain-row"><span>Full Qty:</span><span id="ppFull"></span></div>
+  <div class="plain-row"><span>Net Qty:</span><span id="ppNet"></span></div>
+  <div class="plain-footer">Thank you</div>
+</div></div>
+</div>
+</main>
 <script>/*!
 
 JSZip v3.10.2 - A JavaScript class for generating and reading zip files
@@ -103,10 +162,15 @@ const MATS=["P SAND","VSI 20MM","40MM","6MM","WMM","GSB","DUST","GRAVEL"];
 const $=id=>document.getElementById(id);
 Object.keys(TRUCKS).forEach(t=>$("truck").add(new Option(t+"  ("+TRUCKS[t].toFixed(2)+" MT)",t)));
 MATS.forEach(m=>$("mat").add(new Option(m,m)));
+Object.keys(TRUCKS).forEach(t=>$("plainTruck").add(new Option(t+"  ("+TRUCKS[t].toFixed(2)+" MT)",t)));
+MATS.forEach(m=>$("plainMat").add(new Option(m,m)));
 const p2=n=>String(n).padStart(2,"0");
 const now=new Date();
 $("date").value=now.getFullYear()+"-"+p2(now.getMonth()+1)+"-"+p2(now.getDate());
 $("time").value=p2(now.getHours())+":"+p2(now.getMinutes());
+$("plainDate").value=$("date").value;
+$("plainTime").value=$("time").value;
+$("plainTruck").value="TN87H6565";
 const r2=x=>(Math.round(x*100)/100).toFixed(2);
 function vals(){
   const [y,m,d]=($("date").value||"").split("-");
@@ -125,15 +189,43 @@ function refresh(){
   ["dc","party","loading","unload","transport","truck","mat","pay"].forEach(k=>$("p_"+k).textContent=v[k]);
   ["empty","full","net"].forEach(k=>$("p_"+k).textContent=v[k] ? v[k]+"MT" : "");
 }
-document.querySelectorAll("input,select").forEach(e=>{e.addEventListener("input",refresh);e.addEventListener("change",refresh)});
-const chooser=$("chooser"),challanApp=$("challanApp");
-const showChallan=()=>{chooser.hidden=true;challanApp.hidden=false;window.scrollTo(0,0)};
-const showMenu=()=>{challanApp.hidden=true;chooser.hidden=false;window.scrollTo(0,0)};
+function plainVals(){
+  const [y,m,d]=($("plainDate").value||"").split("-");
+  const [H,M]=($("plainTime").value||"").split(":");
+  let h=+H,ap=h>=12?"pm":"am";h=h%12||12;
+  const empty=TRUCKS[$("plainTruck").value]||0,net=parseFloat($("plainNet").value)||0;
+  return {date:`Date: ${d||""}-${m||""}-${y||""}   ${p2(h)}:${M||""} ${ap}`,
+    dc:$("plainDc").value.trim(),party:$("plainParty").value.trim(),loading:$("plainLoading").value.trim(),
+    unload:$("plainUnload").value.trim(),transport:$("plainTransport").value.trim(),truck:$("plainTruck").value,
+    mat:$("plainMat").value,empty:r2(empty),full:r2(empty+net),net:r2(net)};
+}
+function plainRefresh(){
+  const v=plainVals();
+  $("plainEmpty").value=v.empty;$("plainFull").value=v.full;
+  $("ppDate").textContent=v.date;$("ppDc").textContent=v.dc?`DC#: ${v.dc}`:"DC#:";
+  [["Party","party"],["Loading","loading"],["Unload","unload"],["Transport","transport"],["Truck","truck"],["Mat","mat"],["Empty","empty"],["Full","full"],["Net","net"]].forEach(([id,key])=>{
+    $("pp"+id).textContent=["Empty","Full","Net"].includes(id)?`${v[key]} MT`:v[key];
+  });
+}
+document.querySelectorAll("#challanApp input,#challanApp select").forEach(e=>{e.addEventListener("input",refresh);e.addEventListener("change",refresh)});
+document.querySelectorAll("#plainApp input,#plainApp select").forEach(e=>{e.addEventListener("input",plainRefresh);e.addEventListener("change",plainRefresh)});
+const chooser=$("chooser"),challanApp=$("challanApp"),plainApp=$("plainApp");
+const showChallan=()=>{chooser.hidden=true;plainApp.hidden=true;challanApp.hidden=false;window.scrollTo(0,0)};
+const showPlain=()=>{chooser.hidden=true;challanApp.hidden=true;plainApp.hidden=false;plainRefresh();window.scrollTo(0,0)};
+const showMenu=()=>{challanApp.hidden=true;plainApp.hidden=true;chooser.hidden=false;window.scrollTo(0,0)};
 $("openSrl").onclick=showChallan;
 $("backToMenu").onclick=showMenu;
-$("openPlain").onclick=()=>{$("plainNote").textContent="Plain Challan format will be added next."};
+$("plainBack").onclick=showMenu;
+$("openPlain").onclick=showPlain;
 if(location.hash==="#challanApp")showChallan();
+$("plainPrint").onclick=()=>{
+  const v=plainVals(),er=$("plainErr");
+  if(!v.dc){er.textContent="Enter the DC number before printing.";return}
+  if(!$("plainNet").value||parseFloat($("plainNet").value)<=0){er.textContent="Enter a net quantity before printing.";return}
+  er.textContent="";plainRefresh();window.print();
+};
 refresh();
+plainRefresh();
 const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 const textOf=p=>(p.match(/<w:t[ >][^]*?<\/w:t>|<w:t>[^<]*<\/w:t>/g)||[]).map(t=>t.replace(/<[^>]+>/g,"")).join("").replace(/&amp;/g,"&");
 async function build(v){
