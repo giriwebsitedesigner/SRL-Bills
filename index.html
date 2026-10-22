@@ -49,13 +49,22 @@ button{margin-top:16px;width:100%;padding:13px;font-size:16px;font-weight:700;bo
 @media print{
   @page{size:80mm auto;margin:0}
   body{background:#fff!important}
-  #chooser,#challanApp,.topbar,#plainFormCard{display:none!important}
-  #plainApp{display:block!important;margin:0!important;padding:0!important}
+  #chooser,.topbar,#plainFormCard{display:none!important}
+  body:not(.printing-srl) #challanApp{display:none!important}
+  body:not(.printing-srl) #plainApp{display:block!important;margin:0!important;padding:0!important}
   .plain-wrap{display:block!important;margin:0!important;padding:0!important}
   .plain-print-card{display:block!important;box-shadow:none!important;border:0!important;padding:0!important}
   .plain-print-card h1{display:none!important}
   .plain-bill{width:80mm!important;min-height:0!important;margin:0!important;border:0!important;padding:4mm 5mm!important;font-size:11px!important}
   .plain-bill .plain-row{min-height:6mm!important}
+  body.printing-srl #plainApp{display:none!important}
+  body.printing-srl #challanApp{display:block!important;margin:0!important;padding:0!important}
+  body.printing-srl #challanApp .wrap{display:block!important;margin:0!important;padding:0!important}
+  body.printing-srl #challanApp .wrap>.card:first-child{display:none!important}
+  body.printing-srl #challanApp .wrap>.card:last-child{display:block!important;box-shadow:none!important;border:0!important;padding:0!important}
+  body.printing-srl #challanApp .wrap>.card:last-child>h1{display:none!important}
+  body.printing-srl .bill{width:80mm!important;min-height:0!important;margin:0!important;border:0!important;padding:4mm 5mm!important;font-size:11px!important}
+  body.printing-srl .bill .r{min-height:6mm!important}
 }
 </style></head><body>
 <main class="chooser" id="chooser">
@@ -83,7 +92,7 @@ button{margin-top:16px;width:100%;padding:13px;font-size:16px;font-weight:700;bo
 <label>Full Qty (MT) = Empty + Net</label><input id="full" readonly>
 <label>Payment Type</label><input id="pay" value="Cash" readonly>
 <div class="err" id="err"></div>
-<button id="go">Download DOC</button>
+<button id="go" type="button">Print Challan</button>
 </div>
 <div class="card"><h1>Preview</h1>
 <div class="bill">
@@ -213,12 +222,20 @@ const chooser=$("chooser"),challanApp=$("challanApp"),plainApp=$("plainApp");
 const showChallan=()=>{chooser.hidden=true;plainApp.hidden=true;challanApp.hidden=false;window.scrollTo(0,0)};
 const showPlain=()=>{chooser.hidden=true;challanApp.hidden=true;plainApp.hidden=false;plainRefresh();window.scrollTo(0,0)};
 const showMenu=()=>{challanApp.hidden=true;plainApp.hidden=true;chooser.hidden=false;window.scrollTo(0,0)};
-$("openSrl").onclick=showChallan;
-$("backToMenu").onclick=showMenu;
-$("plainBack").onclick=showMenu;
-$("openPlain").onclick=showPlain;
+function setRoute(route){
+  if(location.hash!==route) location.hash=route;
+  if(route==="#challanApp")showChallan();
+  else if(route==="#plainChallan")showPlain();
+  else showMenu();
+}
+$("openSrl").onclick=e=>{e.preventDefault();setRoute("#challanApp")};
+$("openPlain").onclick=e=>{e.preventDefault();setRoute("#plainChallan")};
+$("backToMenu").onclick=e=>{e.preventDefault();setRoute("#")};
+$("plainBack").onclick=()=>setRoute("#");
 if(location.hash==="#challanApp")showChallan();
-if(location.hash==="#plainChallan")showPlain();
+else if(location.hash==="#plainChallan")showPlain();
+else showMenu();
+addEventListener("hashchange",()=>setRoute(location.hash));
 $("plainPrint").onclick=()=>{
   const v=plainVals(),er=$("plainErr");
   if(!v.dc){er.textContent="Enter the DC number before printing.";return}
@@ -253,14 +270,13 @@ async function build(v){
   zip.file("word/document.xml",xml);
   return zip.generateAsync({type:"blob",mimeType:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
 }
-$("go").onclick=async()=>{
+$("go").onclick=()=>{
   const v=vals(),er=$("err");
   if(!v.dc){er.textContent="DC/Ref # enter pannunga";return}
   if(!$("net").value||parseFloat($("net").value)<=0){er.textContent="Net Qty enter pannunga";return}
   if(!$("date").value||!$("time").value){er.textContent="Date & Time select pannunga";return}
   er.textContent="";
-  const blob=await build(v);
-  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
-  a.download="SRL-_"+v.dc.replace(/[\\\/:*?"<>|\s]/g,"")+".docx";document.body.appendChild(a);a.click();a.remove();
+  document.body.classList.add("printing-srl");window.print();
 };
+addEventListener("afterprint",()=>document.body.classList.remove("printing-srl"));
 </script></body></html>
