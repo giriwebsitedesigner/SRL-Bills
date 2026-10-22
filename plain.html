@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Plain Challan</title>
+  <style>
+    :root { font-family: Arial, Helvetica, sans-serif; color: #161616; background: #f1f3f5; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; }
+    .topbar { min-height: 62px; display: flex; align-items: center; gap: 16px; padding: 12px 20px; color: white; background: #20252b; }
+    .topbar a { color: white; text-decoration: none; font-weight: 700; }
+    .topbar h1 { margin: 0; font-size: 20px; }
+    main { display: grid; justify-items: center; gap: 17px; padding: 28px 16px; }
+    .screen-note { margin: 0; color: #58616b; text-align: center; font-size: 14px; }
+    .receipt { width: 80mm; max-width: 100%; min-height: 112mm; background: #fff; padding: 7mm 5mm 8mm; box-shadow: 0 8px 25px rgba(0, 0, 0, .16); color: #000; font-family: Arial, Helvetica, sans-serif; font-size: 12px; line-height: 1.35; }
+    .receipt-head { margin-bottom: 17px; text-align: center; }
+    .receipt-head h2 { margin: 0 0 8px; font-size: 17px; font-weight: 700; }
+    .receipt-head p { margin: 3px 0; }
+    .trip { margin-top: 10px !important; font-weight: 700; letter-spacing: .2px; }
+    .details { display: grid; gap: 8px; }
+    .detail { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: baseline; }
+    .detail span:last-child { text-align: right; font-weight: 600; }
+    .actions button { cursor: pointer; border: 0; border-radius: 7px; color: white; background: #1d66ae; padding: 12px 24px; font: inherit; font-weight: 700; }
+    .actions button:hover { background: #124a81; }
+    @page { size: 80mm auto; margin: 0; }
+    @media print {
+      :root, body { background: #fff; }
+      .topbar, .screen-note, .actions { display: none !important; }
+      main { display: block; margin: 0; padding: 0; }
+      .receipt { width: 80mm; max-width: none; min-height: 0; padding: 7mm 5mm 8mm; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a href="index.html">← All Challans</a>
+    <h1>Plain Challan</h1>
+  </header>
+  <main>
+    <p class="screen-note">Fixed template ready for your 80 mm POS printer.</p>
+    <article class="receipt" aria-label="Plain outgoing trip delivery challan">
+      <div class="receipt-head">
+        <h2>Delivery challan</h2>
+        <p>Date: 01-09-2026&nbsp;&nbsp;&nbsp;11:56 pm</p>
+        <p><strong>DC#: MT/604</strong></p>
+        <p class="trip">OUTGOING TRIP</p>
+      </div>
+      <section class="details" aria-label="Challan details">
+        <div class="detail"><span>Party:</span><span>VMS</span></div>
+        <div class="detail"><span>Loading:</span><span>CRUSER</span></div>
+        <div class="detail"><span>Un Loading:</span><span>PARTY SITE</span></div>
+        <div class="detail"><span>Transport:</span><span>VMS</span></div>
+        <div class="detail"><span>Vehicle no</span><span>TN87H6565</span></div>
+        <div class="detail"><span>Item:</span><span>P SAND</span></div>
+        <div class="detail"><span>Empty Qty:</span><span>14.85MT</span></div>
+        <div class="detail"><span>Full Qty:</span><span>44.62MT</span></div>
+        <div class="detail"><span>Net Qty:</span><span>29.77MT</span></div>
+      </section>
+    </article>
+    <div class="actions"><button id="printButton" type="button">Print Challan</button></div>
+  </main>
+  <script>
+    document.getElementById("printButton").addEventListener("click", function () {
+      window.print();
+    });
+  </script>
+</body>
+</html>
