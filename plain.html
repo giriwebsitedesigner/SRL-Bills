@@ -13,14 +13,15 @@
     .topbar h1 { margin: 0; font-size: 20px; }
     main { display: grid; justify-items: center; gap: 17px; padding: 28px 16px; }
     .screen-note { margin: 0; color: #58616b; text-align: center; font-size: 14px; }
-    .receipt { width: 80mm; max-width: 100%; min-height: 112mm; background: #fff; padding: 7mm 5mm 8mm; box-shadow: 0 8px 25px rgba(0, 0, 0, .16); color: #000; font-family: Arial, Helvetica, sans-serif; font-size: 12px; line-height: 1.35; }
-    .receipt-head { margin-bottom: 17px; text-align: center; }
+    .receipt { width: 80mm; max-width: 100%; min-height: 112mm; background: #fff; padding: 7mm 5mm 8mm; box-shadow: 0 8px 25px rgba(0, 0, 0, .16); color: #000; font-family: "Courier New", monospace; font-size: 11px; line-height: 1.38; }
+    .receipt-head { margin-bottom: 8px; padding-bottom: 7px; text-align: center; border-bottom: 1px dashed #000; }
     .receipt-head h2 { margin: 0 0 8px; font-size: 17px; font-weight: 700; }
     .receipt-head p { margin: 3px 0; }
     .trip { margin-top: 10px !important; font-weight: 700; letter-spacing: .2px; }
-    .details { display: grid; gap: 8px; }
-    .detail { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: baseline; }
-    .detail span:last-child { text-align: right; font-weight: 600; }
+    .details { display: grid; gap: 0; }
+    .detail { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: baseline; padding: 2px 0; }
+    .detail span:last-child { text-align: right; font-weight: 600; max-width: 44mm; overflow-wrap: anywhere; }
+    .detail.net { margin-top: 7px; padding-top: 7px; border-top: 1px dashed #000; font-size: 12px; font-weight: 700; }
     .actions button { cursor: pointer; border: 0; border-radius: 7px; color: white; background: #1d66ae; padding: 12px 24px; font: inherit; font-weight: 700; }
     .actions button:hover { background: #124a81; }
     @page { size: 80mm auto; margin: 0; }
@@ -55,7 +56,7 @@
         <div class="detail"><span>Item:</span><span>P SAND</span></div>
         <div class="detail"><span>Empty Qty:</span><span>14.85MT</span></div>
         <div class="detail"><span>Full Qty:</span><span>44.62MT</span></div>
-        <div class="detail"><span>Net Qty:</span><span>29.77MT</span></div>
+        <div class="detail net"><span>Net Qty:</span><span>29.77MT</span></div>
       </section>
     </article>
     <div class="actions"><button id="printButton" type="button">Print Challan</button></div>
