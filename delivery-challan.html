@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Delivery Challan | SRL Bills</title>
+  <style>
+    :root{color-scheme:light}
+    *{box-sizing:border-box}
+    body{margin:0;background:#eef2f7;color:#17202b;font-family:system-ui,Arial,sans-serif}
+    .topbar,.layout{max-width:980px;margin:auto;padding:16px}.topbar{padding-bottom:0}.back{display:inline-block;color:#1d4ed8;text-decoration:none;font-weight:700}
+    .layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,420px);gap:18px;align-items:start}
+    .card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 7px rgba(15,23,42,.1)}
+    h1{margin:0 0 4px;font-size:22px}.sub{margin:0 0 16px;color:#526173;font-size:14px}
+    label{display:block;margin:11px 0 5px;font-size:12px;font-weight:700;color:#415166}
+    input,select{width:100%;padding:10px;border:1px solid #b8c4d0;border-radius:8px;background:#fff;font:inherit;color:inherit}
+    input[readonly]{background:#f1f5f9;color:#475569}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:17px}button{border:0;border-radius:8px;padding:12px;font:700 15px system-ui,Arial,sans-serif;cursor:pointer;background:#1d4ed8;color:#fff}.sample{background:#e0e7ff;color:#1e3a8a}
+    .error{min-height:19px;margin-top:10px;color:#b91c1c;font-size:13px;font-weight:600}.ok{color:#15803d}
+    .preview-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px;font-size:14px;font-weight:700}.paper-select{width:auto;padding:7px;font-size:13px}
+    .paper{--paper-width:80mm;width:var(--paper-width);max-width:100%;margin:auto;background:#fff}.paper.paper-58{--paper-width:58mm}.receipt{border:1px solid #111;min-height:166mm;padding:4mm 4.5mm;font-family:"Times New Roman",serif;color:#111;font-size:12px;line-height:1.2}
+    .receipt-title{text-align:center;font-size:16px;line-height:1.35;border-bottom:1px solid #111;padding-bottom:2px;margin-bottom:4px}.receipt-date{text-align:center;font-size:11px;margin:3px 0}.trip{text-align:center;font-weight:700;font-size:12px;letter-spacing:.15px;margin:7px 0}
+    .receipt-row{display:grid;grid-template-columns:45% 55%;gap:3px;min-height:22px;align-items:baseline}.receipt-row .value{text-align:right;overflow-wrap:anywhere}.receipt-row.net{margin-top:3px;font-weight:700}.unit{white-space:nowrap}
+    .print{width:100%;margin-top:14px}.print-help{margin:10px 0 0;font-size:12px;color:#526173;line-height:1.35}
+    .paper-58 .receipt{min-height:175mm;padding:3mm;font-size:10px}.paper-58 .receipt-title{font-size:14px}.paper-58 .receipt-row{min-height:20px;grid-template-columns:47% 53%}.paper-58 .receipt-date,.paper-58 .trip{font-size:10px}
+    @media(max-width:760px){.layout{grid-template-columns:1fr}.paper{width:80mm}.card{border-radius:10px;padding:16px}}
+    @media print{ @page{margin:0} body{background:#fff}.screen-only,.topbar,.layout>.card:first-child{display:none!important}.layout{display:block;padding:0}.layout>.card:last-child{padding:0;box-shadow:none}.preview-title{display:none}.paper{margin:0;width:var(--paper-width)!important;max-width:none}.receipt{border:0;min-height:0;padding:3mm 4mm}.paper-58 .receipt{padding:2.5mm 3mm} }
+  </style>
+</head>
+<body>
+  <nav class="topbar screen-only"><a class="back" href="index.html">← Challan</a></nav>
+  <main class="layout">
+    <section class="card screen-only" aria-labelledby="entryTitle">
+      <h1 id="entryTitle">Delivery Challan</h1>
+      <p class="sub">Enter the outgoing trip details. The challan preview updates immediately.</p>
+      <div class="two"><div><label for="date">Date</label><input id="date" type="date"></div><div><label for="time">Time</label><input id="time" type="time"></div></div>
+      <label for="dc">DC#</label><input id="dc" type="text" placeholder="e.g. MT/604" autocomplete="off">
+      <label for="trip">Trip</label><select id="trip"><option>OUTGOING TRIP</option></select>
+      <label for="party">Party</label><input id="party" value="VMS" readonly>
+      <label for="loading">Loading</label><input id="loading" value="CRUSER" readonly>
+      <label for="unloading">Un Loading</label><input id="unloading" value="PARTY SITE" readonly>
+      <label for="transport">Transport</label><input id="transport" value="VMS" readonly>
+      <label for="vehicle">Vehicle no</label><select id="vehicle"></select>
+      <label for="item">Item</label><select id="item"></select>
+      <div class="two"><div><label for="empty">Empty Qty (MT)</label><input id="empty" readonly></div><div><label for="net">Net Qty (MT)</label><input id="net" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Enter net quantity"></div></div>
+      <label for="full">Full Qty (MT)</label><input id="full" readonly>
+      <div class="error" id="message" role="status"></div>
+      <div class="actions"><button class="sample" id="sample" type="button">Load sample</button><button id="printForm" type="button">Print Challan</button></div>
+    </section>
+    <section class="card" aria-label="Challan preview">
+      <div class="preview-title screen-only"><span>Print preview</span><select class="paper-select" id="paper" aria-label="Paper width"><option value="80">80 mm paper</option><option value="58">58 mm paper</option></select></div>
+      <div class="paper" id="paperPreview">
+        <article class="receipt" aria-label="Delivery challan receipt">
+          <div class="receipt-title">Delivery challan</div>
+          <div class="receipt-date" id="pDate"></div>
+          <div class="receipt-row"><span>DC#:</span><span class="value" id="pDc"></span></div>
+          <div class="trip" id="pTrip"></div>
+          <div class="receipt-row"><span>Party:</span><span class="value" id="pParty"></span></div>
+          <div class="receipt-row"><span>Loading:</span><span class="value" id="pLoading"></span></div>
+          <div class="receipt-row"><span>Un Loading:</span><span class="value" id="pUnloading"></span></div>
+          <div class="receipt-row"><span>Transport:</span><span class="value" id="pTransport"></span></div>
+          <div class="receipt-row"><span>Vehicle no:</span><span class="value" id="pVehicle"></span></div>
+          <div class="receipt-row"><span>Item:</span><span class="value" id="pItem"></span></div>
+          <div class="receipt-row"><span>Empty Qty:</span><span class="value unit" id="pEmpty"></span></div>
+          <div class="receipt-row"><span>Full Qty:</span><span class="value unit" id="pFull"></span></div>
+          <div class="receipt-row net"><span>Net Qty:</span><span class="value unit" id="pNet"></span></div>
+        </article>
+      </div>
+      <button class="print screen-only" id="printPreview" type="button">Print Challan</button>
+      <p class="print-help screen-only">Choose 58 mm or 80 mm here, then select the same paper width in your printer’s print dialog.</p>
+    </section>
+  </main>
+  <script src="data.js"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+    const trucks = window.SRL_BILLS_DATA.trucks;
+    const materials = window.SRL_BILLS_DATA.materials;
+    const two = n => (Math.round(n * 100) / 100).toFixed(2);
+    const pad = n => String(n).padStart(2, "0");
+    const escapeText = value => String(value || "");
+    const quantityToCents = value => {
+      const text = String(value ?? "").trim();
+      if (!/^\d+(?:\.\d{1,2})?$/.test(text)) return null;
+      const [whole, fraction = ""] = text.split(".");
+      return Number(whole) * 100 + Number((fraction + "00").slice(0, 2));
+    };
+    const centsToQty = cents => (cents / 100).toFixed(2);
+    Object.entries(trucks).forEach(([vehicle, empty]) => $("vehicle").add(new Option(`${vehicle} (${two(empty)} MT)`, vehicle)));
+    materials.forEach(item => $("item").add(new Option(item, item)));
+    $("vehicle").value = "TN87H6565";
+    $("item").value = "P SAND";
+    const now = new Date();
+    $("date").value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    $("time").value = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    function formattedDateTime(){
+      const [year, month, day] = $("date").value.split("-");
+      const [hourText, minute = "00"] = $("time").value.split(":");
+      const hour = Number(hourText); const suffix = hour >= 12 ? "pm" : "am";
+      return year ? `${day}-${month}-${year}   ${pad(hour % 12 || 12)}:${minute} ${suffix}` : "";
+    }
+    function update(){
+      const emptyCents = Math.round(trucks[$("vehicle").value] * 100);
+      const netCents = quantityToCents($("net").value);
+      $("empty").value = centsToQty(emptyCents);
+      $("full").value = netCents === null ? "" : centsToQty(emptyCents + netCents);
+      $("pDate").textContent = formattedDateTime();
+      $("pDc").textContent = escapeText($("dc").value);
+      $("pTrip").textContent = $("trip").value;
+      [["Party","party"],["Loading","loading"],["Unloading","unloading"],["Transport","transport"],["Vehicle","vehicle"],["Item","item"]].forEach(([name,id]) => $("p" + name).textContent = $(id).value);
+      $("pEmpty").textContent = `${centsToQty(emptyCents)} MT`;
+      $("pNet").textContent = netCents === null ? "" : `${centsToQty(netCents)} MT`;
+      $("pFull").textContent = netCents === null ? "" : `${centsToQty(emptyCents + netCents)} MT`;
+      const message = $("message");
+      if ($("net").value && netCents === null) message.textContent = "Enter Net Qty with up to two decimal places.";
+      else if (netCents !== null && netCents < 0) message.textContent = "Net Qty cannot be negative.";
+      else message.textContent = netCents !== null ? "Quantity check passed: Full Qty = Empty Qty + Net Qty." : "";
+      message.classList.toggle("ok", netCents !== null && netCents >= 0);
+    }
+    function validateForPrint(){
+      if (!$("dc").value.trim()) { $("message").textContent = "Enter the DC# before printing."; $("message").classList.remove("ok"); return false; }
+      const netCents = quantityToCents($("net").value);
+      if (netCents === null || netCents < 0) { $("message").textContent = "Enter a valid Net Qty before printing."; $("message").classList.remove("ok"); return false; }
+      return true;
+    }
+    function printChallan(){ if (validateForPrint()) window.print(); }
+    ["date","time","dc","trip","party","loading","unloading","transport","vehicle","item","net"].forEach(id => {
+      $(id).addEventListener("input", update);
+      $(id).addEventListener("change", update);
+    });
+    $("paper").addEventListener("change", event => $("paperPreview").classList.toggle("paper-58", event.target.value === "58"));
+    $("sample").addEventListener("click", () => { $("dc").value = "MT/604"; $("vehicle").value = "TN87H6565"; $("item").value = "P SAND"; $("net").value = "29.77"; update(); });
+    $("printForm").addEventListener("click", printChallan);
+    $("printPreview").addEventListener("click", printChallan);
+    update();
+  </script>
+</body>
+</html>
